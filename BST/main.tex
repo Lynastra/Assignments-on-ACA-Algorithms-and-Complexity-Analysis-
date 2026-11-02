@@ -1,0 +1,1862 @@
+\documentclass[otchet]{SCWorks}
+% Тип обучения (одно из значений):
+%    bachelor   - бакалавриат (по умолчанию)
+%    spec       - специальность
+%    master     - магистратура
+% Форма обучения (одно из значений):
+%    och        - очное (по умолчанию)
+%    zaoch      - заочное
+% Тип работы (одно из значений):
+%    coursework - курсовая работа (по умолчанию)
+%    referat    - реферат
+%  * otchet     - универсальный отчет
+%  * nirjournal - журнал НИР
+%  * digital    - итоговая работа для цифровой кафедры
+%    diploma    - дипломная работа
+%    pract      - отчет о научно-исследовательской работе
+%    autoref    - автореферат выпускной работы
+%    assignment - задание на выпускную квалификационную работу
+%    review     - отзыв руководителя
+%    critique   - рецензия на выпускную работу
+
+% * Добавлены вручную. За вопросами к @mchernigin
+\usepackage{preamble}
+
+\begin{document}
+
+% Кафедра (в родительном падеже)
+\chair{математической кибернетики и компьютерных наук}
+
+% Тема работы
+\title{Двоичное дерево поиска.}
+
+% Курс
+\course{3}
+
+% Группа
+\group{351}
+
+% Факультет (в родительном падеже) (по умолчанию "факультета КНиИТ")
+% \department{факультета КНиИТ}
+
+% Специальность/направление код - наименование
+% \napravlenie{02.03.02 "--- Фундаментальная информатика и информационные технологии}
+% \napravlenie{02.03.01 "--- Математическое обеспечение и администрирование информационных систем}
+% \napravlenie{09.03.01 "--- Информатика и вычислительная техника}
+\napravlenie{09.03.04 "--- Программная инженерия}
+% \napravlenie{10.05.01 "--- Компьютерная безопасность}
+
+% Для студентки. Для работы студента следующая команда не нужна.
+\studenttitle{студентки}
+
+% Фамилия, имя, отчество в родительном падеже
+\author{Винник Маргариты Дмитриевны}
+
+% Заведующий кафедрой 
+\chtitle{доцент, к.\,ф.-м.\,н.}
+\chname{С.\,В.\,Миронов}
+
+% Руководитель ДПП ПП для цифровой кафедры (перекрывает заведующего кафедры)
+% \chpretitle{
+%     заведующий кафедрой математических основ информатики и олимпиадного\\
+%     программирования на базе МАОУ <<Ф"=Т лицей №1>>
+% }
+% \chtitle{г. Саратов, к.\,ф.-м.\,н., доцент}
+% \chname{Кондратова\, Ю.\,Н.}
+
+% Научный руководитель (для реферата преподаватель проверяющий работу)
+\satitle{доцент, к.\,ф.-м.\,н.} %должность, степень, звание
+\saname{И.\,А.\,Батраева}
+
+% Руководитель практики от организации (руководитель для цифровой кафедры)
+\patitle{доцент, к.\,ф.-м.\,н.}
+\paname{С.\,В.\,Миронов}
+
+% Руководитель НИР
+\nirtitle{доцент, к.\,п.\,н.} % степень, звание
+\nirname{В.\,А.\,Векслер}
+
+% Семестр (только для практики, для остальных типов работ не используется)
+\term{2}
+
+% Наименование практики (только для практики, для остальных типов работ не
+% используется)
+\practtype{учебная}
+
+% Продолжительность практики (количество недель) (только для практики, для
+% остальных типов работ не используется)
+\duration{2}
+
+% Даты начала и окончания практики (только для практики, для остальных типов
+% работ не используется)
+\practStart{01.07.2024}
+\practFinish{13.01.2024}
+
+% Год выполнения отчета
+\date{2026}
+
+\maketitle
+
+% Включение нумерации рисунков, формул и таблиц по разделам (по умолчанию -
+% нумерация сквозная) (допускается оба вида нумерации)
+\secNumbering
+
+\tableofcontents
+
+% Раздел "Обозначения и сокращения". Может отсутствовать в работе
+% \abbreviations
+% \begin{description}
+%     \item ... "--- ...
+%     \item ... "--- ...
+% \end{description}
+
+% Раздел "Определения". Может отсутствовать в работе
+% \definitions
+
+% Раздел "Определения, обозначения и сокращения". Может отсутствовать в работе.
+% Если присутствует, то заменяет собой разделы "Обозначения и сокращения" и
+% "Определения"
+% \defabbr
+
+\intro
+
+Двоичное дерево поиска (англ.\ \emph{binary search tree}, BST) "--- структура
+данных для хранения упорядоченного динамического множества. Она поддерживает
+поиск, вставку и удаление ключа, а также поиск минимума, максимума,
+предшественника и преемника~\cite{kormen}. На деревьях поиска, как правило,
+строятся ассоциативные контейнеры: \texttt{std::set} и \texttt{std::map} в
+C++, \texttt{TreeSet} в Java.
+ 
+Время работы основных операций пропорционально высоте дерева $h$: для
+сбалансированного дерева $h = \Theta(\lg n)$, а для вырожденного дерева,
+напоминающего связный список, $h = \Theta(n)$~\cite{kormen}. Поэтому простое
+двоичное дерево поиска не даёт гарантий, и на практике используют его
+самобалансирующиеся версии: красно-чёрные деревья и АВЛ-деревья. Им будут
+посвящены следующие лабораторные работы.
+ 
+\textbf{Цель работы} "--- изучить двоичное дерево поиска, реализовать его на
+языке C++ и оценить сложность операций и расход памяти.
+ 
+\textbf{Задачи:}
+\begin{enumerate}
+  \item изучить определение двоичного дерева поиска, его свойство и способы обхода;
+  \item реализовать наивную версию (вставка, поиск, вывод) и проверить её на тестовых задачах;
+  \item разобрать готовую реализацию Simple Snippets (удаление, три вида обхода, обход по уровням, высота) и выявить её недостатки;
+  \item написать улучшенную реализацию, устранив выявленные недостатки;
+  \item оценить сложность операций и расход памяти.
+\end{enumerate}
+
+\section{Краткая теория}
+
+\subsection{Определения}
+ 
+\emph{Дерево} "--- непустая коллекция вершин и рёбер, в которой любые две
+вершины соединены ровно одним путём~\cite{sedgewick}. \emph{Двоичное
+дерево} "--- дерево, в котором у каждой вершины не более двух потомков:
+левый и правый. \emph{Двоичное дерево поиска} "--- двоичное дерево, в котором
+для любого узла $x$ ключи левого поддерева меньше $x.\mathit{key}$, а ключи
+правого поддерева больше~\cite{itmo}.
+ 
+В~\cite{kormen} допускаются равные ключи (в левом поддереве $\le$, в правом
+$\ge$), поэтому на рисунке~\ref{fig:bst-example} есть два узла со значением~5.
+В нашей реализации все ключи уникальны, поэтому неравенства строгие.
+ 
+\subsection{Представление в памяти}
+ 
+Узел хранит ключ \texttt{key} и указатели \texttt{left\_child} и
+\texttt{right\_child}; отсутствующий потомок обозначается
+\texttt{nullptr}. В ряде реализаций в узел добавляют указатель на родителя
+$p$~\cite{kormen}, но в данной работе информация о родителе не используется.
+Всё дерево задаётся указателем на корень \texttt{root}.
+ 
+\subsection{Основные операции}
+ 
+\begin{itemize}
+  \item \textbf{Поиск.} Сравниваем искомый ключ с ключом текущего узла и
+        переходим в левое или правое поддерево, пока не найдём ключ или не
+        дойдём до \texttt{nullptr}. Время $O(h)$.
+  \item \textbf{Вставка.} Спускаемся так же, как при поиске, и подвешиваем
+        новый узел на месте \texttt{nullptr}. Время $O(h)$.
+  \item \textbf{Удаление.} Рассматриваются три случая: у узла нет детей
+        (узел просто удаляется); у узла один ребёнок (узел заменяется
+        ребёнком); у узла два ребёнка (на его место ставится преемник "---
+        минимальный узел правого поддерева). Время $O(h)$.
+  \item \textbf{Обходы.} \emph{Прямой} (узел, левое, правое),
+        \emph{симметричный} (левое, узел, правое; ключи выводятся по
+        возрастанию) и \emph{обратный} (левое, правое, узел). Время
+        $\Theta(n)$~\cite{kormen}.
+\end{itemize}
+ 
+\subsection{Зависимость времени работы от высоты}
+ 
+Одно и то же множество ключей может быть представлено разными деревьями
+поиска (рисунок~\ref{fig:bst-example}): в варианте (а) высота равна~2, в
+варианте (б) "--- 4. Форма дерева определяется порядком вставки ключей:
+для случайного порядка математическое ожидание высоты равно $O(\lg n)$, а
+для отсортированной последовательности дерево превращается в цепочку высотой
+$n-1$~\cite{kormen}. Именно поэтому нужны самобалансирующиеся деревья.
+ 
+% Если в шаблоне подпись рисунка выводится как «Рис. 1.», то добавьте в
+% преамбулу: \addto\captionsrussian{\renewcommand{\figurename}{Рисунок}}
+% \captionsetup[figure]{labelsep=endash}  % получится «Рисунок 1 -- ...»
+\begin{figure}[htbp]
+  \centering
+  \begin{tikzpicture}[
+      every node/.style={circle, draw, minimum size=7mm, inner sep=1pt},
+      level distance=11mm,
+      level 1/.style={sibling distance=24mm},
+      level 2/.style={sibling distance=13mm},
+      level 3/.style={sibling distance=11mm},
+      level 4/.style={sibling distance=9mm}]
+    % (а)
+    \node (a) at (0,0) {6}
+      child {node {5} child {node {2}} child {node {5}}}
+      child {node {7} child[missing] child {node {8}}};
+    \node[draw=none, minimum size=0pt] at (0,-3.9) {(а)};
+    % (б)
+    \node (b) at (8,0) {2}
+      child[missing]
+      child {node {5}
+        child[missing]
+        child {node {7}
+          child {node {6} child {node {5}} child[missing]}
+          child {node {8}}}};
+    \node[draw=none, minimum size=0pt] at (8.6,-5.2) {(б)};
+  \end{tikzpicture}
+  \caption{Двоичные деревья поиска с одним и тем же набором ключей (по~\cite{kormen})}
+  \label{fig:bst-example}
+\end{figure}
+
+\subsection{Время работы обходов}
+\label{sec:walk-time}
+ 
+Все три обхода (прямой, симметричный и обратный) выполняются за время,
+линейное по числу узлов. Приведём доказательство из~\cite{kormen} для
+симметричного обхода. Для двух других оно полностью повторяется: процедуры
+отличаются только тем, где относительно двух рекурсивных вызовов
+печатается ключ, а на время работы это не влияет.
+ 
+Процедура симметричного обхода:
+ 
+\begin{Verbatim}[fontsize=\small]
+INORDER-TREE-WALK(x)
+1  if x != NIL
+2      INORDER-TREE-WALK(x.left)
+3      print x.key
+4      INORDER-TREE-WALK(x.right)
+\end{Verbatim}
+ 
+\textbf{Теорема.} Если $x$ "--- корень поддерева с $n$ узлами, то время
+работы вызова \texttt{INORDER-TREE-WALK}$(x)$ равно $\Theta(n)$.
+ 
+\textbf{Доказательство.} Пусть $T(n)$ "--- время вызова для поддерева с $n$
+узлами. Процедура посещает все $n$ узлов, поэтому $T(n) = \Omega(n)$.
+Остаётся показать, что $T(n) = O(n)$.
+ 
+Для пустого дерева выполняется только проверка $x \neq \mathrm{NIL}$,
+поэтому $T(0) = c$ для некоторой константы $c > 0$. При $n > 0$ процедура
+вызывается для левого поддерева с $k$ узлами и для правого с $n-k-1$
+узлами, поэтому
+\[
+  T(n) \le T(k) + T(n-k-1) + d,
+\]
+где $d > 0$ "--- константа, отражающая время выполнения тела процедуры без
+рекурсивных вызовов.
+ 
+Методом подстановки докажем, что $T(n) \le (c+d)n + c$. Для $n = 0$ имеем
+$(c+d)\cdot 0 + c = c = T(0)$. Для $n > 0$:
+\begin{align*}
+  T(n) &\le T(k) + T(n-k-1) + d \\
+       &\le \bigl((c+d)k + c\bigr) + \bigl((c+d)(n-k-1) + c\bigr) + d \\
+       &= (c+d)(n-1) + 2c + d \\
+       &= (c+d)n + c.
+\end{align*}
+Следовательно, $T(n) = O(n)$, и вместе с оценкой снизу получаем
+$T(n) = \Theta(n)$. \hfill $\square$
+
+
+\section{Наивная реализация}
+
+Для начала рассмотрим так называемую наивную реализацию двоичного дерева
+поиска. Определение дерева и его свойства приведены в
+разделе~«Краткая теория». Здесь рассматривается вариант без информации о
+родителе: узел хранит только ключ \texttt{key} и указатели на потомков
+\texttt{left\_child} и \texttt{right\_child}, а само дерево "--- указатель на
+корень \texttt{root}.
+ 
+Такая реализация нужна по следующим причинам:
+\begin{itemize}
+  \item она даёт представление об устройстве \texttt{std::set} в C++,
+        \texttt{TreeSet} в Java и других подобных коллекций;
+  \item на ней видно, как на практике работает двоичное дерево поиска
+        (в теории всё выглядит понятным, а детали проявляются только при
+        написании кода);
+  \item она показывает недостатки базовой версии и объясняет, зачем нужна
+        балансировка;
+  \item она служит основой для собственного аналога \texttt{std::set},
+        поддерживающего операции, которых нет в стандартном контейнере.
+\end{itemize}
+ 
+Реализация является наивной по следующим причинам:
+\begin{itemize}
+  \item нет балансировки;
+  \item высота дерева не контролируется: у структуры нет даже поля,
+        хранящего высоту;
+  \item все операции работают за $O(h)$, где $h$ "--- высота дерева, а в
+        худшем случае $h = O(n)$.
+\end{itemize}
+ 
+Версия поддерживает вставку, поиск и вывод дерева. Для проверки решены две
+тестовые задачи; их условия приведены в комментариях к коду.
+
+\begin{minted}{c}
+#define _CRT_SECURE_NO_WARNINGS
+#include <cstdio>
+#include <iostream>
+#include <string>
+
+using namespace std;
+/* 
+Правило двоичного дерева поиска:
+1) у любой вершины в левом поддереве ключи < ключу в самой вершине
+2) у любой вершины в правом поддереве ключи > ключу в самой вершине
+*/
+
+/*class BST {
+	struct Node
+	{
+		int key;
+		Node *left_child = nullptr, * right_child = nullptr;
+		// конструктор. принимает значение ключа и 
+		// записывает это значение в поле key
+		Node(int k) : key(k) {}
+	}
+	*root = nullptr;
+
+	bool contains(Node* n, int key) const 
+	{
+		if (!n)
+			return false;
+		if (key == n -> key)
+			return true;
+		if (key < n->key)
+			return contains(n->left_child, key);
+		else
+			return contains(n->right_child, key);
+	}
+	void insert(Node *n, int key)
+	{
+		if (!root)
+		{
+			root = new Node(key);
+			return;
+		}
+		if (key == n ->key)
+		{
+			return;
+		}
+		if (key < n->key)
+		{
+			if (n->left_child)
+			{
+				insert(n->left_child, key);
+			}
+			else
+			{
+				n->left_child = new Node(key);
+			}
+		}
+		else
+		{
+			if (n->right_child)
+			{
+				insert(n->right_child, key);
+			}
+			else
+			{
+				n->right_child = new Node(key);
+			}
+		}
+	}
+public:
+	bool contains(int key) const
+	{
+		return contains(root, key);
+	}
+	void insert(int key) 
+	{
+		insert(root, key);
+	}
+};
+*/
+
+class BST {
+	struct Node
+	{
+		int key;
+		Node* left_child = nullptr, * right_child = nullptr;
+		Node(int k) : key(k) {}
+	}
+	*root = nullptr;
+
+	bool contains(Node* n, int key) const
+	{
+		if (!n)
+			return false;
+		if (key == n->key)
+			return true;
+		if (key < n->key)
+			return contains(n->left_child, key);
+		else
+			return contains(n->right_child, key);
+	}
+	// основная функция, от кот. отталкиваемся
+	// и модифицируем
+	/*void insert(Node*& n, int key)
+	{
+		if (!n)
+		{
+			n = new Node(key);
+			return;
+		}
+		if (key == n->key)
+		{
+			return;
+		}
+		if (key < n->key)
+		{
+			insert(n->left_child, key);
+		}
+		else
+		{
+			insert(n->right_child, key);
+		}
+	}
+	*/
+	// модификация функции вставки под задачу 2
+	bool insert(Node*& n, int key)
+	{
+		if (!n)
+		{
+			n = new Node(key);
+			return true;
+		}
+		if (key == n->key)
+			return false;
+		if (key < n->key)
+			return insert(n->left_child, key);
+		else
+			return insert(n->right_child, key);
+	}
+	// основная функция, от кот.отталкиваемся
+	// и модифицируем
+	/*
+	void print(Node *n) const
+	{
+		if (!n)
+			return;
+		print(n->left_child);
+		if (n->left_child && n->right_child)
+		{
+			cout << n->key << "\n";
+		}
+		//cout << n->key << "\n";
+		print(n->right_child);
+	}
+	*/
+	void print(Node* n, int level) const
+	{
+		if (!n)
+			return;
+		print(n->left_child, level + 1);
+		for (int i = 0; i < level; i++)
+		{
+			cout << ".";
+		}		
+		cout << n->key << "\n";
+		print(n->right_child, level + 1);
+	}
+	void destroy(Node *n)
+	{
+		if (!n)
+			return;
+		destroy(n->left_child);
+		destroy(n->right_child);
+		delete n;
+	}
+public:
+	BST() = default;
+	BST(const BST&) = delete;
+	BST& operator=(const BST&) = delete;
+
+	bool contains(int key) const
+	{
+		return contains(root, key);
+	}
+	bool insert(int key)
+	{
+		return insert(root, key);
+	}
+	/*
+	void insert(int key)
+	{
+		insert(root, key);
+	}
+	
+	void print() const 
+	{
+		print(root);
+	}
+	*/
+	void print() const
+	{
+		print(root, 0);
+	}
+	~BST() 
+	{
+		destroy(root);
+	}
+};
+
+// для проверки (тестирования кода) решим несколько задач
+/*
+* -----Задача 1:
+* Вводится последовательность целых чисел, оканчивающаяся на нулём.
+* Сам ноль в последовательность не входит.
+* Постройте в этой последовательности дерева.
+* Для полученного дерева выведите список всех вершин, 
+* имеющих по два ребёнка в порядке возрастания.
+* Замечание: если во входных данных есть повторяющие числа, то их нужно 
+игнорировать, т.е. все элементы дерева уникальны
+* Пример:
+* 7 3 2 1 9 5 4 6 8 0
+* -----Задача 2:
+* Напишите программу, которая будет реализовывать действия в бинарном 
+* дереве поиска "вставить" и "найти" (по значению). 
+* Программа должна обрабатывать запросы 3х видов:
+* 1) ADD n - если указанного числа ещё нет в дереве, вставлять его и 
+* выводить слово "DONE", если уже есть - оставлять дерево как было и 
+* выводить слово "ALREADY".
+* 2) SEARCH - следует выводить слово "YES" 
+* (если значение найдено в дереве) или слово "NO" 
+* (если не найдено). Дерево при этом не меняется.
+* 3) PRINTTREE - выводить всё дерево, обязательно используя алгоритм, 
+указанный далее в условии задачи.
+
+Алгоритм для вывода дерева:
+template<class T> void print_tree(Node<T> *p, int level)
+{
+	if (p == nullptr)
+		return;
+	print_tree(p->left, level + 1);
+	for(int i = 0; i < level; i++)
+		cout << ".";
+	cout << p->data << end;
+	print_tree(p->right, level + 1);
+}
+* Изначальный вызов этой функции - print_tree(root, 0)
+* Пример:
+ADD 2
+ADD 3
+ADD 2
+SEARCH 2
+ADD 5
+PRINTTREE
+SEARCH 7
+*/
+int main()
+{
+	// для задачи 2:
+	// Если есть input.txt, то переключаем ввод на него.
+	// Раз есть файл с входными данными — значит 
+  // предполагается, что есть файл и для 
+  // результата, пишем в него.
+	// Если output.txt отсутствует — вывод останется в консоли.
+	if (freopen("input.txt", "r", stdin)) {
+		(void) freopen("output.txt", "w", stdout);
+	}
+	// Если input.txt не открылся — freopen вернул nullptr,
+	// cin по-прежнему связан с консолью, работаем через неё
+	BST bst;
+	// для 1й задачи
+
+	/*
+	while (true)
+	{
+		int x;
+		cin >> x;
+		if (x == 0)
+		{
+			break;
+		}
+		bst.insert(x);
+	}
+	bst.print();
+	*/
+
+	string command;
+	while (cin >> command)
+	{
+		if (command == "SEARCH")
+		{
+			int key;
+			cin >> key;
+			cout << (bst.contains(key) ? "YES\n" : 
+      "NO\n");
+		}
+		else if (command == "ADD")
+		{
+			int key;
+			cin >> key;
+			cout << (bst.insert(key) ? "DONE\n" : 
+      "ALREADY\n");
+		}
+		else if (command == "PRINTTREE") 
+			bst.print();
+		else cout << "Unknown command\n";
+	}
+}
+\end{minted}
+
+\section{Реализация Simple Snippets}
+\label{sec:ss}
+
+\subsection{Описание реализации}
+
+Следующая рассматриваемая реализация взята из курса Simple
+Snippets~\cite{simplesnippets}. В отличие от наивной версии, она содержит
+полный набор операций для работы с деревом: вставку, поиск, удаление, три
+вида обхода (прямой, симметричный и обратный), обход по уровням,
+вычисление высоты и вывод дерева, повёрнутого на $90^\circ$. Управление
+организовано через консольное меню.
+
+Узел представлен классом \texttt{TreeNode} с полями \texttt{value} (ключ),
+\texttt{left} и \texttt{right}. Класс \texttt{BST} хранит указатель на корень
+\texttt{root} и содержит следующие методы:
+\begin{itemize}
+  \item \texttt{insertNode} и \texttt{insertRecursive} "--- две реализации
+        вставки (итеративная и рекурсивная); повторная вставка существующего
+        ключа отклоняется;
+  \item \texttt{iterativeSearch} и \texttt{recursiveSearch} "--- две
+        реализации поиска;
+  \item \texttt{deleteNode} "--- рекурсивное удаление, возвращающее указатель
+        на корень поддерева после удаления;
+  \item \texttt{minValueNode} "--- поиск минимального узла в поддереве
+        (нужен при удалении узла с двумя детьми);
+  \item \texttt{printPreorder}, \texttt{printInorder},
+        \texttt{printPostorder} "--- три вида обхода;
+  \item \texttt{height}, \texttt{printGivenLevel},
+        \texttt{printLevelOrderBFS} "--- высота дерева и обход по уровням;
+  \item \texttt{print2D} "--- вывод дерева "боком".
+\end{itemize}
+Код приведён в листинге ниже.
+
+\begin{minted}{c}
+#include<iostream>
+#define SPACE 10
+
+using namespace std;
+
+class TreeNode {
+  public:
+    int value;
+  TreeNode * left;
+  TreeNode * right;
+
+  TreeNode() {
+    value = 0;
+    left = NULL;
+    right = NULL;
+  }
+  TreeNode(int v) {
+    value = v;
+    left = NULL;
+    right = NULL;
+  }
+};
+
+class BST {
+  public:
+    TreeNode * root;
+  BST() {
+    root = NULL;
+  }
+  bool isTreeEmpty() {
+    if (root == NULL) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  void insertNode(TreeNode * new_node) {
+    if (root == NULL) {
+      root = new_node;
+      cout << "Value Inserted as root node!" << endl;
+    } else {
+      TreeNode * temp = root;
+      while (temp != NULL) {
+        if (new_node -> value == temp -> value) {
+          cout << "Value Already exist," <<
+            "Insert another value!" << endl;
+          return;
+        } else if ((new_node -> value < temp -> value) && 
+        (temp -> left == NULL)) {
+          temp -> left = new_node;
+          cout << "Value Inserted to the left!" << endl;
+          break;
+        } else if (new_node -> value < temp -> value) {
+          temp = temp -> left;
+        } else if ((new_node -> value > temp -> value) && 
+        (temp -> right == NULL)) {
+          temp -> right = new_node;
+          cout << "Value Inserted to the right!" << endl;
+          break;
+        } else {
+          temp = temp -> right;
+        }
+      }
+    }
+  }
+  	TreeNode* insertRecursive(TreeNode *r, TreeNode *new_node)
+	{
+		if(r==NULL)
+		{
+			r=new_node;
+			cout <<"Insertion successful"<<endl;
+			return r;
+		}
+	
+		if(new_node->value < r->value)
+		{
+			r->left = insertRecursive(r->left,new_node);
+		}
+		else if (new_node->value > r->value)  
+		{
+			r->right = insertRecursive(r->right,new_node);
+		}
+	   else
+	   {
+	     	cout << "No duplicate values allowed!" << endl;
+	     	return r; 
+		}
+		return r;
+	}
+
+  void print2D(TreeNode * r, int space) {
+    if (r == NULL) // Base case  1
+      return;
+    space += SPACE; // Increase distance between levels   2
+    print2D(r -> right, space); // Process right child first 3 
+    cout << endl;
+    for (int i = SPACE; i < space; i++) // 5 
+      cout << " "; // 5.1  
+    cout << r -> value << "\n"; // 6
+    print2D(r -> left, space); // Process left child  7
+  }
+
+  void printPreorder(TreeNode * r) //(current node, Left, Right) 
+  {
+    if (r == NULL)
+      return;
+    /* first print data of node */
+    cout << r -> value << " ";
+    /* then recur on left sutree */
+    printPreorder(r -> left);
+    /* now recur on right subtree */
+    printPreorder(r -> right);
+  }
+
+  void printInorder(TreeNode * r) //(Left, current node, Right)
+  {
+    if (r == NULL)
+      return;
+    /* first recur on left child */
+    printInorder(r -> left);
+    /* then print the data of node */
+    cout << r -> value << " ";
+    /* now recur on right child */
+    printInorder(r -> right);
+  }
+  void printPostorder(TreeNode * r) //(Left, Right, Root)
+  {
+    if (r == NULL)
+      return;
+    // first recur on left subtree 
+    printPostorder(r -> left);
+    // then recur on right subtree 
+    printPostorder(r -> right);
+    // now deal with the node 
+    cout << r -> value << " ";
+  }
+
+  TreeNode * iterativeSearch(int v) {
+    if (root == NULL) {
+      return root;
+    } else {
+      TreeNode * temp = root;
+      while (temp != NULL) {
+        if (v == temp -> value) {
+          return temp;
+        } else if (v < temp -> value) {
+          temp = temp -> left;
+        } else {
+          temp = temp -> right;
+        }
+      }
+      return NULL;
+    }
+  }
+
+  TreeNode * recursiveSearch(TreeNode * r, int val) {
+    if (r == NULL || r -> value == val)
+      return r;
+
+    else if (val < r -> value)
+      return recursiveSearch(r -> left, val);
+
+    else
+      return recursiveSearch(r -> right, val);
+  }
+
+  int height(TreeNode * r) {
+    if (r == NULL)
+      return -1;
+    else {
+      /* compute the height of each subtree */
+      int lheight = height(r -> left);
+      int rheight = height(r -> right);
+
+      /* use the larger one */
+      if (lheight > rheight)
+        return (lheight + 1);
+      else return (rheight + 1);
+    }
+  }
+
+  /* Print nodes at a given level */
+  void printGivenLevel(TreeNode * r, int level) {
+    if (r == NULL)
+      return;
+    else if (level == 0)
+      cout << r -> value << " ";
+    else // level > 0  
+    {
+      printGivenLevel(r -> left, level - 1);
+      printGivenLevel(r -> right, level - 1);
+    }
+  }
+  void printLevelOrderBFS(TreeNode * r) {
+    int h = height(r);
+    for (int i = 0; i <= h; i++)
+      printGivenLevel(r, i);
+  }
+
+  TreeNode * minValueNode(TreeNode * node) {
+    TreeNode * current = node;
+    /* loop down to find the leftmost leaf */
+    while (current -> left != NULL) {
+      current = current -> left;
+    }
+    return current;
+  }
+
+  TreeNode * deleteNode(TreeNode * r, int v) {
+    // base case 
+    if (r == NULL) {
+      return NULL;
+    }
+    // If the key to be deleted is smaller than the root's key, 
+    // then it lies in left subtree 
+    else if (v < r -> value) {
+      r -> left = deleteNode(r -> left, v);
+    }
+    // If the key to be deleted is greater than the root's key, 
+    // then it lies in right subtree 
+    else if (v > r -> value) {
+      r -> right = deleteNode(r -> right, v);
+    }
+    // if key is same as root's key, then 
+    // This is the node to be deleted 
+    else {
+      // node with only one child or no child 
+      if (r -> left == NULL) {
+        TreeNode * temp = r -> right;
+        delete r;
+        return temp;
+      } else if (r -> right == NULL) {
+        TreeNode * temp = r -> left;
+        delete r;
+        return temp;
+      } else {
+        // node with two children: Get the inorder successor 
+        // (smallest in the right subtree) 
+        TreeNode * temp = minValueNode(r -> right);
+        // Copy the inorder successor's content to this node 
+        r -> value = temp -> value;
+        // Delete the inorder successor 
+        r -> right = deleteNode(r -> right, temp -> value);
+        //deleteNode(r->right, temp->value); 
+      }
+    }
+    return r;
+  }
+
+};
+
+int main() {
+  BST obj;
+  int option, val;
+
+  do {
+    cout << "What operation do you want to perform? " <<
+      " Select Option number. Enter 0 to exit." << endl;
+    cout << "1. Insert Node" << endl;
+    cout << "2. Search Node" << endl;
+    cout << "3. Delete Node" << endl;
+    cout << "4. Print/Traversal BST values" << endl;
+    cout << "5. Height of Tree" << endl;
+    cout << "6. Clear Screen" << endl;
+    cout << "0. Exit Program" << endl;
+
+    cin >> option;
+    //Node n1;
+    TreeNode * new_node = new TreeNode();
+
+    switch (option) {
+    case 0:
+      break;
+    case 1:
+      	cout <<"INSERT"<<endl;
+	      cout <<"Enter VALUE of TREE NODE to INSERT in BST: ";
+	      cin >> val;
+	      new_node->value = val;
+	      obj.root= obj.insertRecursive(obj.root,new_node);
+	      //obj.insertNode(new_node);
+	      cout<<endl;
+    		break;
+      
+    case 2:
+      cout << "SEARCH" << endl;
+      cout << "Enter VALUE of TREE NODE to SEARCH in BST: ";
+      cin >> val;
+      //new_node = obj.iterativeSearch(val);
+      new_node = obj.recursiveSearch(obj.root, val);
+      if (new_node != NULL) {
+        cout << "Value found" << endl;
+      } else {
+        cout << "Value NOT found" << endl;
+      }
+      break;
+    case 3:
+      cout << "DELETE" << endl;
+      cout << "Enter VALUE of TREE NODE to DELETE in BST: ";
+      cin >> val;
+      new_node = obj.iterativeSearch(val);
+      if (new_node != NULL) {
+        obj.deleteNode(obj.root, val);
+        cout << "Value Deleted" << endl;
+      } else {
+        cout << "Value NOT found" << endl;
+      }
+      break;
+    case 4:
+      cout << "PRINT 2D: " << endl;
+      obj.print2D(obj.root, 5);
+      cout << endl;
+      cout << "Print Level Order BFS: \n";
+      obj.printLevelOrderBFS(obj.root);
+      cout << endl;
+      //	      cout <<"PRE-ORDER: ";
+      //	      obj.printPreorder(obj.root);
+      //	      cout<<endl;
+      //	      cout <<"IN-ORDER: ";
+      //	      obj.printInorder(obj.root);
+      //	      cout<<endl;
+      //	      cout <<"POST-ORDER: ";
+      //	      obj.printPostorder(obj.root);
+      break;
+    case 5:
+      cout << "TREE HEIGHT" << endl;
+      cout << "Height : " << obj.height(obj.root) << endl;
+      break;
+    case 6:
+      system("cls");
+      break;
+    default:
+      cout << "Enter Proper Option number " << endl;
+    }
+
+  } while (option != 0);
+
+  return 0;
+}
+\end{minted}
+
+\subsection{Выявленные недостатки}
+
+Реализация работает на типичных сценариях, но содержит ошибки и
+проектные недостатки. Часть из них проверена запуском программы под
+AddressSanitizer и LeakSanitizer (компилятор g++).
+
+\begin{enumerate}
+  \item \textbf{Потеря нового корня при удалении (ошибка).} В пункте меню
+        «Удалить» результат вызова \texttt{obj.deleteNode(obj.root, val)}
+        отбрасывается, хотя функция возвращает указатель на корень поддерева
+        после удаления. Если удаляется корень, у которого нет одного из
+        потомков, память освобождается оператором \texttt{delete}, а
+        \texttt{obj.root} продолжает указывать на неё, и любая следующая
+        операция обращается к освобождённой памяти. Проверка: вставка
+        ключа и его удаление из дерева из одного узла с последующим выводом
+        дают ошибку \texttt{heap-use-after-free}.
+
+  \item \textbf{Утечки памяти.} 
+  
+  	\textbf{(а)} В начале каждой итерации цикла меню безусловно выполняется \texttt{new TreeNode()}, 
+		хотя узел нужен только при вставке. 
+		
+		\textbf{(б)} В пунктах «Найти» и «Удалить» указатель \texttt{new\_node} перезаписывается результатом 
+		поиска, и созданный узел теряется. 
+		
+		\textbf{(в)} При вставке дубликата новый узел не освобождается. 
+		
+		\textbf{(г)} У класса \texttt{BST} нет деструктора, поэтому
+        при выходе из программы дерево не освобождается. Проверка: после
+        вставки трёх ключей и немедленного выхода LeakSanitizer сообщает об
+        утечке 96 байт в четырёх блоках "--- три узла дерева и узел,
+        созданный на последней итерации меню.
+
+  \item \textbf{Отсутствие проверки ввода.} Значения читаются без проверки
+        результата. При вводе нечислового значения поток \texttt{cin}
+        переходит в состояние ошибки, последующие операции чтения не
+        изменяют переменную \texttt{option}, и программа бесконечно
+        повторяет последний выбранный пункт. Проверка: при вводе букв
+        вместо ключа ключ 0 вставляется один раз, после чего программа
+        бесконечно выводит сообщение о дубликате.
+
+  \item \textbf{Дублирование кода и двойной поиск.} Есть две реализации
+        вставки и две "--- поиска, при этом в меню используется только по
+        одной (остальные закомментированы или не вызываются). 
+		
+		При удалении сначала вызывается \texttt{iterativeSearch}, чтобы проверить
+        наличие ключа, а затем \texttt{deleteNode} ищет тот же ключ повторно.
+
+  \item \textbf{Смешение логики и ввода-вывода.} Методы вставки сами
+        печатают сообщения, поэтому результат операции нельзя использовать
+        в программе (например, в тесте) и нельзя повторно использовать класс
+        в другой программе. Кроме того, узел создаёт вызывающий код, и
+        неясно, кто отвечает за его освобождение.
+
+  \item \textbf{Нарушение инкапсуляции.} Все поля и вспомогательные
+        рекурсивные методы объявлены \texttt{public}. Чтобы вставить ключ,
+        приходится писать 
+		
+		\texttt{obj.insertRecursive(obj.root, new\_node)}, и пользователь класса 
+		может случайно нарушить свойство дерева, изменив \texttt{root} или указатели узлов.
+
+  \item \textbf{Неэффективный обход по уровням.}
+        \texttt{printLevelOrderBFS} для каждого уровня заново вызывает
+        \texttt{printGivenLevel}, который обходит дерево с корня. Суммарное
+        время составляет $O(n\cdot h)$, а для вырожденного дерева
+        $O(n^2)$. Название BFS вводит в заблуждение: очереди нет, по сути
+        выполняется повторяющийся поиск в глубину.
+
+  \item \textbf{Устаревший и непереносимый стиль.} Используются
+        \texttt{NULL} вместо \texttt{nullptr}, макрос
+        \texttt{\#define SPACE}, очистка экрана через
+        \texttt{system("cls")} (работает только в Windows); методы, не
+        изменяющие дерево, не помечены \texttt{const}; копирование объекта
+        не запрещено.
+
+  \item \textbf{Глубина рекурсии.} Рекурсивная вставка, удаление, обходы и
+        вычисление высоты используют стек, глубина которого равна высоте
+        дерева. Для вырожденного дерева из очень большого числа узлов
+        это грозит переполнением стека. Недостаток свойственен всем
+        рекурсивным реализациям и обсуждается в разделе~\ref{sec:analysis}.
+\end{enumerate}
+
+\subsection{Способы исправления}
+
+Для каждого недостатка ниже указан способ его устранения; реализация с
+этими исправлениями описана в разделе~\ref{sec:good}.
+
+\begin{longtable}{|c|p{0.28\textwidth}|p{0.54\textwidth}|}
+  \caption{Недостатки реализации Simple Snippets и их исправление}
+  \label{tab:fixes} \\
+  \hline
+  № & Недостаток & Исправление \\ \hline
+  \endfirsthead
+  \hline
+  № & Недостаток & Исправление \\ \hline
+  \endhead
+  1 & Потеря нового корня при удалении &
+      Передавать указатель по ссылке (\texttt{Node*\&}): присваивание
+      \texttt{node = ...} изменяет указатель в родителе или сам
+      \texttt{root}, возвращать значение не нужно. \\ \hline
+  2 & Утечки памяти &
+      Узлы создаёт и удаляет только сам класс: \texttt{insert(int key)}
+      создаёт узел внутри, лишних \texttt{new} в меню нет; деструктор
+      освобождает дерево обратным обходом; копирование запрещено
+      (\texttt{= delete}). \\ \hline
+  3 & Нет проверки ввода &
+      Функция \texttt{readInt} проверяет результат \texttt{cin >{}> value};
+      при ошибке сбрасывает флаги (\texttt{cin.clear()}), пропускает
+      остаток строки (\texttt{cin.ignore}) и выводит сообщение. \\ \hline
+  4 & Дублирование кода, двойной поиск &
+      Оставлен один вариант каждой операции; \texttt{remove} находит и
+      удаляет узел за один спуск и возвращает \texttt{bool}. \\ \hline
+  5 & Логика смешана с выводом &
+      Методы возвращают \texttt{bool} (выполнено или нет), печатает
+      только \texttt{main}; в метод вставки передаётся ключ, а не узел. \\ \hline
+  6 & Нарушена инкапсуляция &
+      \texttt{root}, \texttt{Node} и рекурсивные помощники
+      \texttt{private}; публичный интерфейс состоит из десяти методов. \\ \hline
+  7 & Обход по уровням за $O(n\cdot h)$ &
+      Использовать очередь \texttt{std::queue}: каждый узел помещается в
+      неё и извлекается ровно один раз, время $O(n)$. \\ \hline
+  8 & Устаревший стиль &
+      \texttt{nullptr} вместо \texttt{NULL}; макрос заменён выражением;
+      \texttt{system("cls")} удалён; методы, не меняющие дерево, помечены
+      \texttt{const}. \\ \hline
+  9 & Глубина рекурсии &
+      Не устранён: поиск сделан итеративным, остальные операции остаются
+      рекурсивными (см. подраздел~\ref{sec:limits}). \\ \hline
+\end{longtable}
+
+
+% =====================================================================
+\section{Хорошая, правильная реализация}
+\label{sec:good}
+
+Улучшенная реализация сохраняет возможности версии Simple Snippets
+(вставка, поиск, удаление, три вида обхода, обход по уровням, высота,
+вывод дерева, меню), но устраняет недостатки, перечисленные в
+таблице~\ref{tab:fixes}. Весь код приведён в листинге ниже, далее
+разобрано, как он работает.
+
+\begin{minted}{c}
+// Двоичное дерево поиска (BST) на C++17.
+// Без windows.h: код работает на любой ОС.
+
+#include <iostream>
+#include <limits>
+#include <queue>
+#include <string>
+using namespace std;
+
+class BST {
+public:
+    BST() = default;
+    ~BST() { clear(root); } // освобождаем всё дерево
+
+    // Копировать дерево запрещаем: иначе два объекта 
+	// владели бы одними узлами
+    BST(const BST&) = delete;
+    BST& operator=(const BST&) = delete;
+
+    // ---- Основные операции. Возвращают true/false, 
+	// ничего не печатают ----
+    bool insert(int key) { return insertHelper(root, key); }
+    bool remove(int key) { return removeHelper(root, key); }
+    bool contains(int key) const 
+	{ 
+		return findHelper(root, key) != nullptr; 
+	}
+    bool empty() const { return root == nullptr; }
+
+    // ---- Три обхода ----
+    void preorder() const 
+	{ 
+		preorderHelper(root);  
+		cout << '\n'; 
+	}   // узел, левое, правое
+    void inorder() const 
+	{ 
+		inorderHelper(root);   
+		cout << '\n'; 
+	}   // левое, узел, правое
+    void postorder() const 
+	{ 
+		postorderHelper(root); 
+		cout << '\n'; 
+	}   // левое, правое, узел
+
+    // ---- Обход по уровням (через очередь, за O(n)) ----
+    void levelOrder() const {
+        if (!root) { cout << '\n'; return; }
+        queue<Node*> q;
+        q.push(root);
+        while (!q.empty()) {
+            Node* cur = q.front();
+            q.pop();
+            cout << cur->key << ' ';
+            if (cur->left)  q.push(cur->left);
+            if (cur->right) q.push(cur->right);
+        }
+        cout << '\n';
+    }
+    // Высота в рёбрах: пустое дерево -1, одиночный узел 0
+    int height() const { return heightHelper(root); }
+    // Дерево, повёрнутое на 90 градусов: корень слева, 
+	// правые дети сверху
+    void print2D() const {
+        if (!root) { cout << "(пусто)\n"; return; }
+        print2DHelper(root, 0);
+    }
+
+private:
+    struct Node {
+        int key;
+        Node* left = nullptr;
+        Node* right = nullptr;
+        explicit Node(int k) : key(k) {}
+    };
+
+    Node* root = nullptr;
+
+    // ---- Вставка ----
+    // Node*& значит "ссылка на сам указатель". 
+    // Присвоив node = new Node(...),
+    // мы меняем тот указатель, который лежит в родителе (или root).
+    bool insertHelper(Node*& node, int key) {
+        if (!node) {	// нашли пустое место
+            node = new Node(key);
+            return true;
+        }
+        if (key < node->key)
+			return insertHelper(node->left, key);
+        if (key > node->key) 
+			return insertHelper(node->right, key);
+        return false; // такой ключ уже есть
+    }
+
+    // ---- Поиск ----
+    Node* findHelper(Node* node, int key) const {
+        while (node && node->key != key)
+            node = (key < node->key) ? node->left : node->right;
+        return node;	// nullptr, если не нашли
+    }
+
+    // ---- Удаление ----
+    bool removeHelper(Node*& node, int key) {
+        if (!node) return false;	// не нашли
+        if (key < node->key) return removeHelper(node->left, key);
+        if (key > node->key) return removeHelper(node->right, key);
+
+        // Нашли удаляемый узел.
+		// нет левого: заменяем правым (или nullptr)
+        if (!node->left) {
+            Node* old = node;
+            node = node->right;
+            delete old;
+        }
+		// нет правого: заменяем левым
+        else if (!node->right) {
+            Node* old = node;
+            node = node->left;
+            delete old;
+        }
+        else {// два ребёнка
+			// преемник = минимум правого поддерева
+            Node* succ = node->right;
+            while (succ->left) succ = succ->left;
+            node->key = succ->key;	// копируем его ключ сюда
+			// и удаляем преемника (у него нет левого)
+            removeHelper(node->right, succ->key);
+        }
+        return true;
+    }
+
+    // ---- Обходы ----
+    void preorderHelper(const Node* node) const {
+        if (!node) return;
+        cout << node->key << ' ';
+        preorderHelper(node->left);
+        preorderHelper(node->right);
+    }
+    void inorderHelper(const Node* node) const {
+        if (!node) return;
+        inorderHelper(node->left);
+        cout << node->key << ' ';
+        inorderHelper(node->right);
+    }
+    void postorderHelper(const Node* node) const {
+        if (!node) return;
+        postorderHelper(node->left);
+        postorderHelper(node->right);
+        cout << node->key << ' ';
+    }
+
+    int heightHelper(const Node* node) const {
+        if (!node) return -1;
+        int l = heightHelper(node->left);
+        int r = heightHelper(node->right);
+        return 1 + (l > r ? l : r);
+    }
+
+    void print2DHelper(const Node* node, int depth) const {
+        if (!node) return;
+		// сначала правое: оно окажется сверху
+        print2DHelper(node->right, depth + 1);
+        cout << string(depth * 4, ' ') << node->key << '\n';
+        print2DHelper(node->left, depth + 1);
+    }
+
+    // Удаление всего поддерева обратным обходом: 
+	// сначала дети, потом сам узел
+    void clear(Node* node) {
+        if (!node) return;
+        clear(node->left);
+        clear(node->right);
+        delete node;
+    }
+};
+
+// Читает целое число; при неверном вводе очищает поток 
+// и возвращает false
+bool readInt(const char* prompt, int& value) {
+    cout << prompt;
+    if (cin >> value) return true;
+    if (cin.eof()) exit(0);	// конец ввода: выходим
+    cin.clear();
+    cin.ignore(numeric_limits<streamsize>::max(), '\n');
+    cout << "Нужно ввести целое число.\n";
+    return false;
+}
+
+int main() 
+{
+    setlocale(LC_ALL, "Russian");
+    BST tree;
+    int option = -1;
+
+    while (option != 0) {
+        cout << "\n1. Вставить  2. Найти  3. Удалить  
+		4. Обходы и вывод  5. Высота  0. Выход\n";
+        if (!readInt("> ", option)) { option = -1; continue; }
+
+        int val;
+        switch (option) {
+        case 0:
+            break;
+        case 1:
+            if (readInt("Ключ: ", val))
+                cout << (tree.insert(val) ? "Вставлено\n" : 
+				"Такой ключ уже есть\n");
+            break;
+        case 2:
+            if (readInt("Ключ: ", val))
+                cout << (tree.contains(val) ? "Найден\n" : 
+				"Не найден\n");
+            break;
+        case 3:
+            if (readInt("Ключ: ", val))
+                cout << (tree.remove(val) ? "Удалён\n" : "Не найден\n");
+            break;
+        case 4:
+            cout << "Прямой:      "; tree.preorder();
+            cout << "Симметричный: "; tree.inorder();
+            cout << "Обратный:    "; tree.postorder();
+            cout << "По уровням:  "; tree.levelOrder();
+            cout << "Дерево:\n";    tree.print2D();
+            break;
+        case 5:
+            cout << "Высота: " << tree.height() << '\n';
+            break;
+        default:
+            cout << "Нет такого пункта\n";
+        }
+    }
+    return 0;
+}
+\end{minted}
+
+\subsection{Устройство класса}
+
+Класс \texttt{BST} делится на открытый интерфейс и закрытую часть.
+Снаружи видны только операции над деревом, а узлы, корень и рекурсивные
+помощники скрыты.
+
+\begin{longtable}{|p{0.25\textwidth}|p{0.5\textwidth}|p{0.15\textwidth}|}
+  \caption{Открытый интерфейс класса \texttt{BST}}
+  \label{tab:interface} \\
+  \hline
+  Метод & Назначение & Результат \\ \hline
+  \endfirsthead
+  \hline
+  Метод & Назначение & Результат \\ \hline
+  \endhead
+  \texttt{insert(key)}   & вставка ключа; повторный ключ отклоняется & \texttt{bool} \\ \hline
+  \texttt{remove(key)}   & удаление узла с заданным ключом & \texttt{bool} \\ \hline
+  \texttt{contains(key)} & проверка наличия ключа & \texttt{bool} \\ \hline
+  \texttt{empty()}       & проверка, что дерево пусто & \texttt{bool} \\ \hline
+  \texttt{preorder()}, \texttt{inorder()}, \texttt{postorder()} &
+      прямой, симметричный и обратный обходы с печатью ключей & \texttt{void} \\ \hline
+  \texttt{levelOrder()}  & обход по уровням (в ширину) & \texttt{void} \\ \hline
+  \texttt{height()}      & высота дерева в рёбрах (пустое дерево $-1$) & \texttt{int} \\ \hline
+  \texttt{print2D()}     & вывод дерева, повёрнутого на $90^\circ$ & \texttt{void} \\ \hline
+\end{longtable}
+
+Узел \texttt{Node} описан внутри класса как закрытая структура с ключом и
+двумя указателями на потомков. Корень \texttt{root} также закрыт, поэтому
+все узлы создаются и удаляются только методами самого класса. Это
+исключает вопрос о владении памятью, который в версии Simple Snippets
+оставался нерешённым.
+
+\subsection{Вставка}
+
+Вставка выполнена рекурсивной функцией, принимающей указатель на узел
+\emph{по ссылке}:
+
+\begin{minted}[fontsize=\small]{cpp}
+bool insertHelper(Node*& node, int key) {
+    if (!node) {                              // нашли пустое место
+        node = new Node(key);
+        return true;
+    }
+    if (key < node->key) return insertHelper(node->left, key);
+    if (key > node->key) return insertHelper(node->right, key);
+    return false;                             // такой ключ уже есть
+}
+\end{minted}
+
+Запись \texttt{Node*\&} означает ссылку на сам указатель, а не на узел,
+на который он указывает. Поэтому присваивание \texttt{node = new Node(key)}
+изменяет то поле, которое было передано: \texttt{root} либо
+\texttt{left}/\texttt{right} родителя. Отдельно хранить указатель на
+родителя и возвращать новый корень поддерева не требуется.
+
+Пример: вставка ключа 10 в дерево с ключами 7, 3, 2, 1, 9, 5, 4, 6, 8.
+Так как $10 > 7$, вызов переходит к правому потомку; затем $10 > 9$, и
+вызов получает ссылку на правое поле узла 9, которое равно
+\texttt{nullptr}. Там создаётся узел 10, и он оказывается правым потомком
+девятки. Вставка уже имеющегося ключа доходит до последней строки и
+возвращает \texttt{false}, дерево не меняется.
+
+\subsection{Поиск}
+
+Поиск выполнен итеративно и не использует стек вызовов:
+
+\begin{minted}[fontsize=\small]{cpp}
+Node* findHelper(Node* node, int key) const {
+    while (node && node->key != key)
+        node = (key < node->key) ? node->left : node->right;
+    return node;                              // nullptr, если не нашли
+}
+\end{minted}
+
+Цикл идёт вниз, пока не встретит искомый ключ или пустой указатель.
+Метод \texttt{contains} возвращает \texttt{true}, если результат не равен
+\texttt{nullptr}.
+
+\subsection{Удаление}
+
+Удаление использует ту же идею ссылки на указатель и рассматривает три
+случая~\cite{kormen}:
+
+\begin{minted}[fontsize=\small]{cpp}
+bool removeHelper(Node*& node, int key) {
+    if (!node) return false;                  // не нашли
+    if (key < node->key) return removeHelper(node->left, key);
+    if (key > node->key) return removeHelper(node->right, key);
+
+    if (!node->left) {                        // нет левого ребёнка
+        Node* old = node;
+        node = node->right;
+        delete old;
+    } else if (!node->right) {                // нет правого ребёнка
+        Node* old = node;
+        node = node->left;
+        delete old;
+    } else {                                  // два ребёнка
+        Node* succ = node->right;             // преемник: минимум справа
+        while (succ->left) succ = succ->left;
+        node->key = succ->key;                // копируем его ключ
+        removeHelper(node->right, succ->key); // удаляем преемника
+    }
+    return true;
+}
+\end{minted}
+
+\begin{itemize}
+  \item \textbf{Нет левого ребёнка} (в том числе лист). Узел заменяется
+        своим правым потомком, а если его нет, то \texttt{nullptr}. Так как
+        \texttt{node} "--- ссылка на указатель родителя, замена выполняется
+        одним присваиванием.
+  \item \textbf{Нет правого ребёнка.} Симметрично, узел заменяется левым
+        потомком. Пример: узел 9 в дереве выше имеет единственного потомка 8,
+        который встаёт на его место.
+  \item \textbf{Два ребёнка.} Нельзя просто убрать узел, поэтому на его
+        место ставится преемник "--- следующий по величине ключ, то есть
+        минимум правого поддерева. Он достигается шагом вправо и спуском
+        влево до конца. Ключ преемника копируется в удаляемый узел, после
+        чего сам преемник удаляется из правого поддерева; у него нет левого
+        ребёнка, поэтому это один из двух предыдущих случаев.
+\end{itemize}
+
+Пример. При удалении ключа 5 (дети 4 и 6) преемником становится 6: его
+ключ записывается в узел, который раньше хранил 5, а старый узел 6
+удаляется. При удалении корня 7 преемником становится 8 "--- минимум
+правого поддерева, корнем которого служит 9. Так как удаление корня тоже
+выполняется через ссылку на \texttt{root}, дерево остаётся корректным,
+в отличие от версии Simple Snippets.
+
+\subsection{Обходы дерева}
+
+Три вида обхода отличаются только положением печати ключа относительно
+двух рекурсивных вызовов:
+\begin{itemize}
+  \item прямой (\texttt{preorder}): узел, левое поддерево, правое поддерево;
+  \item симметричный (\texttt{inorder}): левое поддерево, узел, правое
+        поддерево; ключи выводятся по возрастанию, что используется как
+        проверка корректности дерева;
+  \item обратный (\texttt{postorder}): левое поддерево, правое поддерево,
+        узел.
+\end{itemize}
+Для дерева с ключами 7, 3, 2, 1, 9, 5, 4, 6, 8 они выводят
+\texttt{7 3 2 1 5 4 6 9 8}, \texttt{1 2 3 4 5 6 7 8 9} и
+\texttt{1 2 4 6 5 3 8 9 7} соответственно. Время каждого обхода равно
+$\Theta(n)$, как показано в теореме о времени центрированного обхода из раздела «Краткая теория».
+
+\subsection{Обход по уровням и высота}
+
+Обход по уровням выполнен с помощью очереди:
+
+\begin{minted}[fontsize=\small]{cpp}
+queue<Node*> q;
+q.push(root);
+while (!q.empty()) {
+    Node* cur = q.front();
+    q.pop();
+    cout << cur->key << ' ';
+    if (cur->left)  q.push(cur->left);
+    if (cur->right) q.push(cur->right);
+}
+\end{minted}
+
+Сначала в очередь помещается корень. На каждом шаге из очереди
+извлекается узел, печатается его ключ, а его потомки добавляются в конец.
+Так узлы выводятся уровень за уровнем, слева направо. Каждый узел
+помещается в очередь и извлекается ровно один раз, поэтому время равно
+$O(n)$, в отличие от $O(n \cdot h)$ в версии Simple Snippets. Для того же
+дерева результат: \texttt{7 3 9 2 5 8 1 4 6}.
+
+Высота считается рекурсивно как единица плюс большая из высот поддеревьев
+и измеряется в рёбрах: пустое дерево имеет высоту $-1$, дерево из одного
+узла "--- 0. Такое соглашение совпадает с принятым в~\cite{kormen}.
+
+\subsection{Вывод дерева}
+
+Метод \texttt{print2D} выводит дерево, повёрнутое на $90^\circ$:
+корень находится слева, правые потомки "--- выше, левые "--- ниже. Для этого
+выполняется обход «правое поддерево, узел, левое поддерево», а перед
+каждым ключом печатается отступ в $4 \cdot d$ пробелов, где $d$ "--- глубина
+узла. Благодаря этому форма дерева видна сразу, без \texttt{windows.h}, и
+программа работает на любой операционной системе.
+
+\subsection{Освобождение памяти}
+
+Деструктор вызывает функцию \texttt{clear}, которая обходит дерево в
+обратном порядке: сначала удаляются оба поддерева, затем сам узел. Порядок
+важен, поскольку после \texttt{delete} указатели на потомков уже
+недоступны. Копирование объекта запрещено (\texttt{BST(const BST\&) = delete}
+и такой же оператор присваивания), иначе два объекта владели бы одними и
+теми же узлами и попытались бы удалить их дважды.
+
+\subsection{Ввод и меню}
+
+Функция \texttt{readInt} читает целое число и проверяет результат:
+при неверном вводе она сбрасывает состояние потока, пропускает остаток
+строки, сообщает об ошибке и возвращает \texttt{false}, а при конце ввода
+завершает программу. В отличие от версии Simple Snippets, меню продолжает
+работать после неверного ввода. Операции вызываются через
+\texttt{switch}; сообщения печатает только \texttt{main}, а методы класса
+возвращают \texttt{bool}.
+
+\subsection{Оставшиеся ограничения}
+\label{sec:limits}
+
+\begin{itemize}
+  \item Вставка, удаление, обходы, высота и вывод остаются рекурсивными,
+        поэтому глубина стека равна высоте дерева. Поиск итеративный.
+        Рекурсию можно заменить циклом или явным стеком, но это усложнило
+        бы код, и в данной работе не делается.
+  \item Дерево не балансируется: форма зависит от порядка вставки
+        (раздел~\ref{sec:analysis}).
+  \item Ключи имеют тип \texttt{int}; для произвольного типа класс можно
+        сделать шаблоном.
+  \item Высота не хранится в узлах и вычисляется заново при каждом
+        вызове за $\Theta(n)$.
+\end{itemize}
+
+
+% =====================================================================
+\section{Демонстрация работы}
+\label{sec:demo}
+
+Ниже приведены результаты работы улучшенной реализации. Пункты меню в
+листингах опущены, показан только результат выбранных операций.
+
+\textbf{1. Построение дерева.} В пустое дерево вставляются ключи
+7, 3, 2, 1, 9, 5, 4, 6, 8, затем выбирается пункт «Обходы и вывод»:
+
+\begin{Verbatim}[fontsize=\small]
+Прямой:       7 3 2 1 5 4 6 9 8
+Симметричный: 1 2 3 4 5 6 7 8 9
+Обратный:     1 2 4 6 5 3 8 9 7
+По уровням:   7 3 9 2 5 8 1 4 6
+Дерево:
+    9
+        8
+7
+            6
+        5
+            4
+    3
+        2
+            1
+\end{Verbatim}
+
+Симметричный обход выдаёт ключи по возрастанию, значит, свойство дерева
+поиска выполнено. Высота дерева, как показывает пункт «Высота», равна 3.
+
+\textbf{2. Повторная вставка и поиск.} Попытка вставить ключ 5 повторно
+отклоняется, поиск находит ключ 6 и не находит ключ 10:
+
+\begin{Verbatim}[fontsize=\small]
+Вставка 5:  Такой ключ уже есть
+Поиск 6:    Найден
+Поиск 10:   Не найден
+\end{Verbatim}
+
+\textbf{3. Удаление узла с двумя детьми (ключ 5).} Преемником становится
+ключ 6, он занимает место удалённого узла:
+
+\begin{Verbatim}[fontsize=\small]
+Удалён
+Прямой:       7 3 2 1 6 4 9 8
+Симметричный: 1 2 3 4 6 7 8 9
+Обратный:     1 2 4 6 3 8 9 7
+По уровням:   7 3 9 2 6 8 1 4
+Дерево:
+    9
+        8
+7
+        6
+            4
+    3
+        2
+            1
+\end{Verbatim}
+
+\textbf{4. Удаление корня (ключ 7).} Новым корнем становится преемник 8:
+
+\begin{Verbatim}[fontsize=\small]
+Удалён
+Прямой:       8 3 2 1 6 4 9
+Симметричный: 1 2 3 4 6 8 9
+Обратный:     1 2 4 6 3 9 8
+По уровням:   8 3 9 2 6 1 4
+Дерево:
+    9
+8
+        6
+            4
+    3
+        2
+            1
+\end{Verbatim}
+
+\textbf{5. Удаление листа и несуществующего ключа.} Ключ 1 (лист)
+удаляется, ключ 100 не найден, после чего высота остаётся равной 3, а
+симметричный обход по-прежнему упорядочен:
+
+\begin{Verbatim}[fontsize=\small]
+Удаление 1:    Удалён
+Удаление 100:  Не найден
+Высота:        3
+Симметричный:  2 3 4 6 8 9
+\end{Verbatim}
+
+\textbf{6. Неверный ввод.} Если вместо ключа ввести буквы, программа
+сообщает об ошибке и продолжает работу (в версии Simple Snippets она
+зацикливалась):
+
+\begin{Verbatim}[fontsize=\small]
+Ключ: abc
+Нужно ввести целое число.
+\end{Verbatim}
+
+\textbf{7. Вырождение дерева.} Если вставлять ключи 1, 2, 3, 4, 5 в
+порядке возрастания, дерево превращается в цепочку, и его высота равна 4
+(на единицу меньше числа узлов):
+
+\begin{Verbatim}[fontsize=\small]
+                5
+            4
+        3
+    2
+1
+\end{Verbatim}
+
+Последний пример объясняет, зачем нужны самобалансирующиеся деревья,
+которым посвящены следующие работы.
+
+
+% =====================================================================
+\section{Анализ сложности и расхода памяти}
+\label{sec:analysis}
+
+\subsection{Время работы}
+
+Пусть $n$ "--- число узлов, $h$ "--- высота дерева. Поиск, вставка и
+удаление спускаются от корня вниз и на каждом уровне выполняют
+$O(1)$ действий, поэтому их время пропорционально высоте~\cite{kormen}.
+Удаление узла с двумя детьми включает до трёх спусков "--- к удаляемому узлу,
+к преемнику и повторный спуск при удалении преемника, "--- так что его
+время также равно $O(h)$.
+
+\begin{longtable}{|p{0.38\textwidth}|c|c|c|}
+  \caption{Временная сложность операций улучшенной реализации}
+  \label{tab:time} \\
+  \hline
+  Операция & Лучший случай & Средний случай & Худший случай \\ \hline
+  \endfirsthead
+  \hline
+  Операция & Лучший случай & Средний случай & Худший случай \\ \hline
+  \endhead
+  \texttt{insert}, \texttt{contains}, \texttt{remove} &
+      $O(1)$ & $O(\lg n)$ & $O(n)$ \\ \hline
+  \texttt{preorder}, \texttt{inorder}, \texttt{postorder} &
+      $\Theta(n)$ & $\Theta(n)$ & $\Theta(n)$ \\ \hline
+  \texttt{levelOrder} & $\Theta(n)$ & $\Theta(n)$ & $\Theta(n)$ \\ \hline
+  \texttt{height} & $\Theta(n)$ & $\Theta(n)$ & $\Theta(n)$ \\ \hline
+  \texttt{print2D} (число вызовов) & $\Theta(n)$ & $\Theta(n)$ & $\Theta(n)$ \\ \hline
+  деструктор & $\Theta(n)$ & $\Theta(n)$ & $\Theta(n)$ \\ \hline
+\end{longtable}
+
+\textbf{Лучший случай} для вставки, поиска и удаления: искомый ключ
+находится в корне либо дерево пусто, тогда достаточно одного шага.
+
+\textbf{Средний случай.} Для дерева, построенного вставкой ключей в
+случайном порядке, математическое ожидание высоты равно
+$O(\lg n)$~\cite{kormen}, поэтому основные операции выполняются в
+среднем за $O(\lg n)$, а построение всего дерева "--- за $O(n \lg n)$.
+
+\textbf{Худший случай.} Если ключи вставляются в отсортированном порядке,
+каждый новый ключ становится потомком предыдущего, дерево превращается в
+цепочку (пример~7 из раздела~\ref{sec:demo}), $h = n-1$, и операции
+выполняются за $O(n)$. Построение всего дерева в этом случае занимает
+$\sum_{i=1}^{n} i = \Theta(n^2)$.
+
+Все обходы, вычисление высоты и очистка посещают каждый узел ровно один
+раз, поэтому их время равно $\Theta(n)$ независимо от формы дерева
+(теорема из раздела «Краткая теория»). Метод \texttt{print2D} также делает $\Theta(n)$
+вызовов, но объём выводимого текста растёт с глубиной узлов, так как
+перед ключом печатается $4d$ пробелов; для цепочки из $n$ узлов он
+составляет $\Theta(n^2)$ символов.
+
+Обход по уровням в реализации Simple Snippets работает за $O(n \cdot h)$,
+то есть до $O(n^2)$ в худшем случае, а в улучшенной "--- за $\Theta(n)$.
+
+\subsection{Расход памяти}
+
+\begin{itemize}
+  \item \textbf{Узлы.} Каждый узел хранит ключ \texttt{int} (4 байта) и
+        два указателя. На 64-разрядной платформе \texttt{sizeof(Node)}
+        равен 24 байтам (4 байта ключа, 4 байта выравнивания и
+        $2 \cdot 8$ байт указателей); к этому добавляются накладные расходы
+        аллокатора. Всего потребуется $\Theta(n)$ памяти, объект класса
+        \texttt{BST} дополнительно содержит один указатель.
+  \item \textbf{Рекурсия.} Вставка, удаление, обходы, вычисление высоты,
+        вывод и очистка используют стек вызовов глубиной $h+1$, то есть
+        $O(h)$ дополнительной памяти: $O(\lg n)$ в среднем и $O(n)$ в
+        худшем случае. Размер стека ограничен (порядка мегабайт, в
+        зависимости от системы), поэтому на цепочке из очень большого
+        числа узлов рекурсивные операции завершатся аварийно. Поиск
+        итеративный и требует $O(1)$ памяти.
+  \item \textbf{Обход по уровням.} Очередь одновременно содержит узлы не
+        более чем двух соседних уровней, поэтому её размер $O(w)$, где $w$ "---
+        максимальная ширина дерева, и в худшем случае $O(n)$.
+  \item \textbf{Версия Simple Snippets.} Память под узлы расходуется так
+        же, но каждая итерация меню, кроме успешной вставки, теряет
+        24 байта, а при выходе не освобождается всё дерево, то есть
+        утечка не ограничена сверху.
+\end{itemize}
+
+\subsection{Сравнение реализаций}
+
+\begin{longtable}{|p{0.34\textwidth}|c|c|c|}
+  \caption{Сравнение трёх реализаций}
+  \label{tab:compare} \\
+  \hline
+  Возможность & Наивная & Simple Snippets & Улучшенная \\ \hline
+  \endfirsthead
+  \hline
+  Возможность & Наивная & Simple Snippets & Улучшенная \\ \hline
+  \endhead
+  Вставка и поиск                & + & + & + \\ \hline
+  Удаление                       & "--- & + (с ошибкой) & + \\ \hline
+  Прямой и обратный обходы       & "--- & + & + \\ \hline
+  Обход по уровням за $O(n)$     & "--- & "--- ($O(nh)$) & + \\ \hline
+  Освобождение памяти            & + & "--- & + \\ \hline
+  Проверка ввода                 & "--- & "--- & + \\ \hline
+  Защита от копирования          & + & "--- & + \\ \hline
+  Балансировка                   & "--- & "--- & "--- \\ \hline
+\end{longtable}
+
+\subsection{Вывод}
+
+Время основных операций определяется высотой дерева, а высота зависит от
+порядка вставки ключей: от $\lg n$ при случайном порядке до $n$ при
+упорядоченном. Улучшенная реализация устраняет ошибки и утечки памяти
+версии Simple Snippets и снижает сложность обхода по уровням, но
+гарантировать логарифмическую высоту не может. Эту задачу решают
+красно-чёрные и АВЛ-деревья.
+
+\conclusion
+
+В ходе работы изучено двоичное дерево поиска: его определение и свойство,
+основные операции (поиск, вставка, удаление) и три вида обхода. Показано,
+что время основных операций пропорционально высоте дерева, а высота зависит
+от порядка вставки ключей.
+ 
+Реализованы и сопоставлены три версии на языке C++: наивная (вставка,
+поиск, вывод), версия Simple Snippets (удаление, три вида обхода, обход по
+уровням, высота) и улучшенная. В версии Simple Snippets найдены и проверены
+запуском недостатки: потеря корня при удалении (обращение к освобождённой
+памяти), утечки памяти, зацикливание при неверном вводе, обход по уровням за
+$O(n \cdot h)$ и другие. Улучшенная версия их устраняет: указатель передаётся
+по ссылке, память создаётся и освобождается только классом, ввод
+проверяется, обход по уровням выполняется с помощью очереди за $O(n)$.
+ 
+Оценка сложности показала, что поиск, вставка и удаление выполняются за
+$O(h)$, то есть за $O(\lg n)$ в среднем и $O(n)$ в худшем случае, а обходы
+и вычисление высоты "--- за $\Theta(n)$. Память составляет $\Theta(n)$ на
+узлы (24 байта на узел при 64-разрядной архитектуре) и $O(h)$ на стек
+вызовов. Пример с упорядоченной вставкой ключей показал вырождение дерева в
+цепочку, поэтому в следующих работах будут рассмотрены самобалансирующиеся
+деревья: красно-чёрное и АВЛ-дерево.
+
+% Отобразить все источники. Даже те, на которые нет ссылок.
+%\nocite{*}
+
+%\begin{enumerate}
+%	\item \href{https://neerc.ifmo.ru/wiki/index.php?title=%D0%94%D0%B5%D1%80%D0%B5%D0%B2%D0%BE_%D0%BF%D0%BE%D0%B8%D1%81%D0%BA%D0%B0,_%D0%BD%D0%B0%D0%B8%D0%B2%D0%BD%D0%B0%D1%8F_%D1%80%D0%B5%D0%B0%D0%BB%D0%B8%D0%B7%D0%B0%D1%86%D0%B8%D1%8F\#.D0.A0.D0.B5.D0.B0.D0.BB.D0.B8.D0.B7.D0.B0%D1%86%D0%B8%D1%8F_.D0.B1.D0.B5.D0.B7_.D0.B8.D1.81%D0%BF%D0%BE%D0%BB%D1%8C%D0%B7%D0%BE%D0%B2%D0%B0%D0%BD%D0%B8%D1%8F_.D0.B8.D0.BD.D1.84.D0.BE.D1.80.D0.BC.%D0%B0%D1%86%D0%B8%D0%B8_.%D0%BE_.%D1%80%D0%BE%D0%B4%D0%B8%D1%82%D0%B5%D0%BB%D0%B5}{Конспект ИТМО по теме "Бинарное дерево поиска, наивная реализация"}
+%	\item Simple Snippets (англоязычный автор, соответсвенно все материалы на английском):
+%	\begin{itemize}
+%		\item \href{https://simplesnippets.in/courses/data-structures-algorithms/}{Структуры данных и алгоритмы
+%		Эта серия уроков предназначена для всех, кто хочет изучить тему "Структуры данных и алгоритмы", начав с самых основ.}
+%		%\item \href{https://web.archive.org/web/20231227033848/https://simplesnippets.tech/what-is-binary-search-tree-bst-with-full-code-dsa/}{Что такое структура данных "Бинарное дерево поиска" (BST)? Все операции с BST и полный код | Алгоритмы и структуры данных.}
+%	\end{itemize}
+%	\item \href{https://www.youtube.com/watch?v=0BUX_PotA4c}{Alek OS, "КАК РАБОТАЮТ ДЕРЕВЬЯ | СТРУКТУРЫ ДАННЫХ"}
+%\end{enumerate}
+
+\bibliographystyle{ugost2003}
+\bibliography{thesis}
+
+% Окончание основного документа и начало приложений Каждая последующая секция
+% документа будет являться приложением
+\appendix
+
+\end{document}

@@ -1,0 +1,17 @@
+# Игнорировать всё внутри этой папки
+*
+
+# Но заходить в подпапки (для картинок)
+!*/
+
+# Оставить только нужные файлы
+!main.tex
+!main.pdf
+!preamble.sty
+!SCWorks.cls
+!thesis.bib
+!ugost2003.bst
+!*.cpp
+!*.h
+!README.md
+!.gitignore
