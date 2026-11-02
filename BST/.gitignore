@@ -13,5 +13,6 @@
 !ugost2003.bst
 !*.cpp
 !*.h
+!*.txt
 !README.md
 !.gitignore
